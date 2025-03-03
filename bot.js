@@ -17,13 +17,13 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 // Objeto de categorias e subcategorias
 const categorias = {
-    "Transporte": { emoji: "🏍️", subcategorias: { "Combustível": "⛽", "Manutenção": "🔧", "Uber": "🚕", "Estacionamento": "🅿️", "Ônibus": "🚌", "Outros": "📦" } },
-    "Alimentação": { emoji: "🍽️", subcategorias: { "Mercado": "🛒", "Restaurantes": "🍽️", "Delivery": "🍔", "Lanchonete": "🥪", "Outros": "📦" } },
-    "Lazer": { emoji: "🎉", subcategorias: { "Jogos": "🎮", "Assinaturas": "📺", "Shows": "🎤", "Viagens": "✈️", "Hobbies": "🎨", "Outros": "📦" } },
-    "Moradia": { emoji: "🏠", subcategorias: { "Aluguel": "🏡", "Contas Fixas": "💡", "Manutenção": "🛠️", "Melhorias": "🛠️", "Outros": "📦" } },
-    "Saúde": { emoji: "❤️", subcategorias: { "Consultas": "🩺", "Medicamentos": "💊", "Academia": "🏋️", "Outros": "📦" } },
-    "Educação": { emoji: "📚", subcategorias: { "Cursos": "🎓", "Livros": "📖", "Mensalidade escolar": "🏫", "Material escolar": "✏️", "Outros": "📦" } },
-    "Outros": { emoji: "📦", subcategorias: { "Presentes": "🎁", "Doações": "🙏", "Imprevistos": "⚠️", "Outros": "📦" } }
+    "Transporte": { emoji: "🏍️", subcategorias: [ "Combustível", "Manutenção", "Uber", "Estacionamento", "Ônibus", "Outros" ] },
+    "Alimentação": { emoji: "🍽️", subcategorias: [ "Mercado", "Restaurantes", "Delivery", "Lanchonete", "Outros" ] },
+    "Lazer": { emoji: "🎉", subcategorias: [ "Jogos", "Assinaturas", "Shows", "Viagens", "Hobbies","Alcool", "Fumo", "Outros" ] },
+    "Moradia": { emoji: "🏠", subcategorias: [ "Aluguel", "Contas Fixas" ,"Manutenção", "Melhorias" ,"Outros"] },
+    "Saúde": { emoji: "❤️", subcategorias: [ "Consultas", "Medicamentos", "Academia", "Outros"] },
+    "Educação": { emoji: "📚", subcategorias: [ "Cursos", "Livros", "Mensalidade escolar", "Material escolar", "Outros" ] },
+    "Outros": { emoji: "📦", subcategorias: [ "Presentes", "Doações", "Imprevistos", "Outros" ] }
 };
 
 
@@ -63,17 +63,11 @@ async function categorizarGasto(descricao) {
     
     return { categoria: "Outros", subcategoria: "Outros" };
 }
-// function formatarCategoria(categoria) {
-//         const emojiCategoria = categorias[categoria]?.emoji || "";
-//         return `${emojiCategoria} ${nome}`.trim();
-// }
+function formatarCategoria(categoria) {
+        const emojiCategoria = categorias[categoria]?.emoji || "";
+        return `${emojiCategoria} ${nome}`.trim();
+}
     
-// function formatarSubCategoria(subcategoria, categoria) {
-//     const emojiSubCategoria = categorias[categoria]?.subcategorias[subcategoria] || "";
-//         return `${emojiSubCategoria} ${nome}`.trim();
-// }
-
-//    const emojiSubcategoria = categorias[categoria]?.subcategorias[subcategoria] || "";
 // Função para gerar relatórios
 async function gerarRelatorio(ctx, dataInicio, dataFim, titulo, tipo) {
     try {
@@ -119,7 +113,7 @@ async function gerarRelatorio(ctx, dataInicio, dataFim, titulo, tipo) {
                     resposta += `Sem dados\nTotal: R$0,00\n\n`;
                 } else {
                     for (const [categoria, subcategorias] of Object.entries(dadosMensais[mes])) {
-                        resposta += `*${categoria}*\n`;
+                        resposta += `*${formatarCategoria(categoria)}*\n`;
                         for (const [subcategoria, total] of Object.entries(subcategorias)) {
                             const percentual = ((total / totalGeral) * 100).toFixed(2);
                             resposta += `  - ${subcategoria}: R$${total.toFixed(2)} (${percentual}%)\n`;
@@ -153,7 +147,6 @@ async function gerarRelatorio(ctx, dataInicio, dataFim, titulo, tipo) {
     }
 }
 
-// Comando único para relatórios com botões
 bot.command("relatorio", (ctx) => {
     ctx.reply("Escolha um tipo de relatório:", Markup.inlineKeyboard([
         [Markup.button.callback("📅 Relatório do Dia", "relatorio_dia")],
@@ -162,8 +155,11 @@ bot.command("relatorio", (ctx) => {
         [Markup.button.callback("📊 Relatório do Ano", "relatorio_ano")]
     ]));
 });
+
 bot.command(["start", "ajuda"], (ctx) => {
-    ctx.reply(`👋 Olá! Estou aqui para tornar o controle dos seus gastos simples, rápido e inteligente!  
+    ctx.reply(`👋 Olá! Sou o FinBot 🤖
+
+        Estou aqui para tornar o controle dos seus gastos simples, rápido e inteligente!  
 
 💡 *Como funciona?*  
 Basta enviar uma mensagem curta, como *"Uber 10"* ou *"padaria 30,99"*, e eu automaticamente categorizo e salvo seu gasto. Nada de planilhas ou apps complicados!  
@@ -292,7 +288,7 @@ bot.action("relatorio_ano", (ctx) => {
 });
 
 
-// Captura de mensagens para registrar gastos
+
 bot.on("text", async (ctx) => {
     try {
         const mensagem = ctx.message.text.trim();
@@ -317,4 +313,6 @@ bot.on("text", async (ctx) => {
     
 });
 
-bot.launch();
+if (process.env.BOT_ACTIVE === "true") {
+    bot.launch();
+  }
