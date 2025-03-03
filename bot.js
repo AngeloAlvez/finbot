@@ -23,7 +23,6 @@ const categorias = {
     "Moradia": { emoji: "🏠", subcategorias: { "Aluguel": "🏡", "Contas Fixas": "💡", "Manutenção": "🛠️", "Melhorias": "🛠️", "Outros": "📦" } },
     "Saúde": { emoji: "❤️", subcategorias: { "Consultas": "🩺", "Medicamentos": "💊", "Academia": "🏋️", "Outros": "📦" } },
     "Educação": { emoji: "📚", subcategorias: { "Cursos": "🎓", "Livros": "📖", "Mensalidade escolar": "🏫", "Material escolar": "✏️", "Outros": "📦" } },
-    "Maconha": { emoji: "🌿", subcategorias: { "Extrações": "🧪", "Erva Pura": "🍁" } },
     "Outros": { emoji: "📦", subcategorias: { "Presentes": "🎁", "Doações": "🙏", "Imprevistos": "⚠️", "Outros": "📦" } }
 };
 
