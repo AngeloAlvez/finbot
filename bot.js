@@ -9,13 +9,11 @@ const {
 } = require("date-fns");
 const { ptBR } = require("date-fns/locale");
 
-// Configurações
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-// Objeto de categorias e subcategorias
 const categorias = {
     "Transporte": { emoji: "🏍️", subcategorias: [ "Combustível", "Manutenção", "Uber", "Estacionamento", "Ônibus", "Outros" ] },
     "Alimentação": { emoji: "🍽️", subcategorias: [ "Mercado", "Restaurantes", "Delivery", "Lanchonete", "Outros" ] },
@@ -27,7 +25,6 @@ const categorias = {
 };
 
 
-// Função para categorizar gastos com IA
 async function categorizarGasto(descricao) {
     const prompt = `Classifique a seguinte despesa em uma das categorias e subcategorias listadas abaixo. 
     Retorne APENAS um JSON puro, sem formatação extra, sem explicações ou texto adicional. 
@@ -68,7 +65,7 @@ function formatarCategoria(categoria) {
         return `${emojiCategoria} ${nome}`.trim();
 }
     
-// Função para gerar relatórios
+
 async function gerarRelatorio(ctx, dataInicio, dataFim, titulo, tipo) {
     try {
         const dataInicioISO = dataInicio.toISOString();
@@ -205,7 +202,7 @@ bot.command("delete", async (ctx) => {
 
 bot.command("insights", async (ctx) => {
     try {
-        // 1. Buscar todos os gastos do usuário
+ o
         const { data, error } = await supabase
             .from("gastos")
             .select("categoria, subcategoria, valor, data_hora")
@@ -220,10 +217,9 @@ bot.command("insights", async (ctx) => {
             return ctx.reply("Você ainda não possui dados de gastos para gerar insights. Comece a registrar seus gastos!");
         }
 
-        // 2. Preparar os dados para o prompt da IA (você pode formatar como preferir)
-        const gastosFormatados = JSON.stringify(data); // Formata os dados como JSON para a IA
+        const gastosFormatados = JSON.stringify(data); 
 
-        // 3. Criar o prompt para a IA
+     
         const prompt = `Analise os seguintes dados de gastos e forneça insights valiosos sobre os padrões de gastos do usuário.
         Inclua pelo menos 3 insights e recomendações para ajudar o usuário a otimizar seus gastos.
         Seja conciso e direto.
@@ -248,10 +244,9 @@ bot.command("insights", async (ctx) => {
         Use alguns poucos emojis e seje educado/jovial/engraçado
         `;
 
-        // 4. Enviar o prompt para a IA
         const resposta = await model.generateContent({ contents: [{ role: "user", parts: [{ text: prompt }] }] });
 
-        // 5. Extrair e enviar a resposta da IA para o usuário
+
         if (resposta?.response?.candidates) {
             const insights = resposta.response.candidates[0]?.content?.parts?.[0]?.text?.trim();
             ctx.reply(`💡 *Seus Insights:* \n\n${insights}`, { parse_mode: "Markdown" });
@@ -266,7 +261,6 @@ bot.command("insights", async (ctx) => {
 });
 
 
-// Ações para os botões de relatório
 bot.action("relatorio_dia", (ctx) => {
     const hoje = new Date();
     gerarRelatorio(ctx, startOfDay(hoje), endOfDay(hoje), "Relatório do Dia", "dia");
