@@ -24,6 +24,10 @@ const categorias = {
     "Outros": { emoji: "📦", subcategorias: [ "Presentes", "Doações", "Imprevistos", "Outros" ] }
 };
 
+function capitalizeFirstLetter(string) {
+    return string.split('').map((char, index) =>
+      index === 0 ? char.toUpperCase() : char).join('')
+  }
 
 async function categorizarGasto(descricao) {
     const prompt = `Classifique a seguinte despesa em uma das categorias e subcategorias listadas abaixo. 
@@ -47,7 +51,10 @@ async function categorizarGasto(descricao) {
 
             try {
                 const jsonResult = JSON.parse(resultado);
-                if (jsonResult.categoria in categorias && jsonResult.subcategoria in categorias[jsonResult.categoria].subcategorias) {
+                if (
+                    categorias[jsonResult.categoria] &&
+                    categorias[jsonResult.categoria].subcategorias.includes(jsonResult.subcategoria)
+                ) {
                     return jsonResult;
                 }
             } catch (e) {
@@ -62,7 +69,32 @@ async function categorizarGasto(descricao) {
 }
 function formatarCategoria(categoria) {
         const emojiCategoria = categorias[categoria]?.emoji || "";
-        return `${emojiCategoria} ${nome}`.trim();
+        return `${emojiCategoria} ${categoria}`.trim();
+}
+
+function gerarGrafico(totais, totalGeral, maxBarras = 15) {
+    let grafico = "\n\n 📊 Distribuição dos Gastos 📊\n\n";
+    let linhasGrafico = [];
+
+    // Gera as linhas do gráfico
+    for (const categoria in totais) {
+        const categoriaFormatada = formatarCategoria(categoria);
+        const totalCategoria = Object.values(totais[categoria]).reduce((a, b) => a + b, 0);
+        const percentual = ((totalCategoria / totalGeral) * 100).toFixed(0);
+        const numBarras = Math.round((percentual / 100) * maxBarras);
+        const barras = "█".repeat(numBarras);
+        linhasGrafico.push({ barras: barras, categoria: categoriaFormatada, percentual: percentual });
+    }
+
+    // Ordena as linhas pelo tamanho das barras (opcional, para melhor visualização)
+    linhasGrafico.sort((a, b) => b.barras.length - a.barras.length);
+
+    // Monta a string do gráfico com alinhamento
+    linhasGrafico.forEach(linha => {
+        grafico += ` ${linha.barras} ${linha.categoria} ${linha.percentual}%\n`;
+    });
+
+    return grafico;
 }
     
 
@@ -83,12 +115,12 @@ async function gerarRelatorio(ctx, dataInicio, dataFim, titulo, tipo) {
             return ctx.reply("Ocorreu um erro ao gerar o relatório.");
         }
 
-        let resposta = `📊 *${titulo}*\n\n`;
+        let resposta = `*${titulo}*\n\n`;
         const totais = {};
         let totalGeral = 0;
 
         if (tipo === "ano") {
-            const mesAtual = new Date().getMonth(); // Obtém o índice do mês atual (0 = Janeiro, 11 = Dezembro)
+            const mesAtual = new Date().getMonth();
             const meses = Array.from({ length: mesAtual + 1 }, (_, i) => 
                 format(new Date(2025, i, 1), "MMMM", { locale: ptBR })
             );
@@ -105,20 +137,35 @@ async function gerarRelatorio(ctx, dataInicio, dataFim, titulo, tipo) {
             });
 
             meses.forEach(mes => {
-                resposta += `📅 *${mes}*\n`;
+                resposta += `*◇ ${capitalizeFirstLetter(mes)} ◇*\n\n`; // Adicionado espaçamento
+
                 if (Object.keys(dadosMensais[mes]).length === 0) {
                     resposta += `Sem dados\nTotal: R$0,00\n\n`;
                 } else {
                     for (const [categoria, subcategorias] of Object.entries(dadosMensais[mes])) {
-                        resposta += `*${formatarCategoria(categoria)}*\n`;
+                        const totalCategoria = Object.values(subcategorias).reduce((a, b) => a + b, 0);
+                        resposta += `*${formatarCategoria(categoria)} - R$${totalCategoria.toFixed(2)}*\n`;
+
                         for (const [subcategoria, total] of Object.entries(subcategorias)) {
                             const percentual = ((total / totalGeral) * 100).toFixed(2);
-                            resposta += `  - ${subcategoria}: R$${total.toFixed(2)} (${percentual}%)\n`;
+                            resposta += `  - ${subcategoria}: R$${total.toFixed(2)} \(${percentual}%\)\n`; // Escapado parênteses
                         }
+                        resposta += `\n`;
                     }
-                    resposta += `Total: R$${Object.values(dadosMensais[mes]).flatMap(Object.values).reduce((a, b) => a + b, 0).toFixed(2)}\n\n`;
+                    resposta += `Total de ${mes}: R$${Object.values(dadosMensais[mes]).flatMap(Object.values).reduce((a, b) => a + b, 0).toFixed(2)}\n\n`;
                 }
             });
+
+            // Reorganiza os dados para o formato esperado por gerarGrafico
+            for (const mes in dadosMensais) {
+                for (const categoria in dadosMensais[mes]) {
+                    if (!totais[categoria]) totais[categoria] = {};
+                    for (const subcategoria in dadosMensais[mes][categoria]) {
+                        if (!totais[categoria][subcategoria]) totais[categoria][subcategoria] = 0;
+                        totais[categoria][subcategoria] += dadosMensais[mes][categoria][subcategoria];
+                    }
+                }
+            }
         } else {
             data.forEach(({ categoria, subcategoria, valor }) => {
                 if (!totais[categoria]) totais[categoria] = {};
@@ -128,16 +175,23 @@ async function gerarRelatorio(ctx, dataInicio, dataFim, titulo, tipo) {
             });
 
             for (const [categoria, subcategorias] of Object.entries(totais)) {
-                resposta += `*${categoria}*\n`;
+                const totalCategoria = Object.values(subcategorias).reduce((a, b) => a + b, 0);
+                resposta += `*${formatarCategoria(categoria)} - R$${totalCategoria.toFixed(2)}*\n`;
                 for (const [subcategoria, total] of Object.entries(subcategorias)) {
                     const percentual = ((total / totalGeral) * 100).toFixed(2);
-                    resposta += `  - ${subcategoria}: R$${total.toFixed(2)} (${percentual}%)\n`;
+                    resposta += `  - ${subcategoria}: R$${total.toFixed(2)} \(${percentual}%\)\n`; // Escapado parênteses
                 }
+                resposta += `\n`;
             }
         }
 
-        resposta += `\n💰 *Total Geral:* R$${totalGeral.toFixed(2)}`;
+        resposta += `\n*Total Geral:* R$${totalGeral.toFixed(2)}`; // Adicionado espaçamento
+
+        const grafico = gerarGrafico(totais, totalGeral);
+        resposta += grafico;
+
         ctx.reply(resposta, { parse_mode: "Markdown" });
+
     } catch (err) {
         console.error("Erro inesperado ao gerar relatório:", err);
         ctx.reply("Ocorreu um erro inesperado ao gerar o relatório.");
@@ -156,7 +210,7 @@ bot.command("relatorio", (ctx) => {
 bot.command(["start", "ajuda"], (ctx) => {
     ctx.reply(`👋 Olá! Sou o FinBot 🤖
 
-        Estou aqui para tornar o controle dos seus gastos simples, rápido e inteligente!  
+Estou aqui para tornar o controle dos seus gastos simples, rápido e inteligente!  
 
 💡 *Como funciona?*  
 Basta enviar uma mensagem curta, como *"Uber 10"* ou *"padaria 30,99"*, e eu automaticamente categorizo e salvo seu gasto. Nada de planilhas ou apps complicados!  
@@ -202,7 +256,6 @@ bot.command("delete", async (ctx) => {
 
 bot.command("insights", async (ctx) => {
     try {
- o
         const { data, error } = await supabase
             .from("gastos")
             .select("categoria, subcategoria, valor, data_hora")
@@ -217,39 +270,57 @@ bot.command("insights", async (ctx) => {
             return ctx.reply("Você ainda não possui dados de gastos para gerar insights. Comece a registrar seus gastos!");
         }
 
-        const gastosFormatados = JSON.stringify(data); 
+        // Formata os dados no formato esperado pela IA
+        const gastosFormatados = JSON.stringify(data.map(gasto => ({
+            categoria: gasto.categoria,
+            subcategoria: gasto.subcategoria,
+            valor: gasto.valor,
+            data_hora: gasto.data_hora
+        })));
 
-     
         const prompt = `Analise os seguintes dados de gastos e forneça insights valiosos sobre os padrões de gastos do usuário.
-        Inclua pelo menos 3 insights e recomendações para ajudar o usuário a otimizar seus gastos.
-        Seja conciso e direto.
-        Identifique pontos de atenção e também pontos positivos, que o usuário esteja fazendo bem
-        
-        Dados dos gastos: ${gastosFormatados}
-        
-        resposta esperada: (algo nesse formato ou semelhante, seja criativo)
-        - (Primeiro insight): [Insight]
-        - Recomendação: [Recomendação]
+            Inclua pelo menos 3 insights e recomendações para ajudar o usuário a otimizar seus gastos.
+            Seja conciso e direto.
+            Identifique pontos de atenção e também pontos positivos, que o usuário esteja fazendo bem
+            
+            Dados dos gastos: ${gastosFormatados}
+            
+            resposta esperada: (algo nesse formato ou semelhante, seja criativo)
+            🤖 Olá! Analisei seus dados e tive alguns insights:
+            
+            ✨ [insira seu Insight aqui]
+            [Recomendação]
+            
 
-        (use algum separador)
+            ✨ [insira seu Insight aqui]
+            [Recomendação]
 
-        - (Segundo insight) [Insight]
-        - Recomendação 2: [Recomendação]
 
-        (use algum separador)
+            🏆 (nome do bom habito) [explicação do porque é bom]
+            [Recomendação]
 
-        - (nome do bom habito) [explicação do porque é bom]
-        - Recomendação 3: [Recomendação]
+            [insira uma conclusão]
+            
 
-        Use alguns poucos emojis e seje educado/jovial/engraçado
+            o padrão é esse, mas seja criativo e analise os dados de verdade, tente entender pontos fracos e fortes.
+            não tente inventar dados, trate somente com a verdade.
+            tente fugir do clichê e extraía o melhor possível, comparando gastos mês a mês podemos descobrir padrões.
+            se achar necessário, dê exemplos reais com os dados do usuário para explicar seus pontos.
+            exemplo de análise legal:
+            "percebei que o gasto de delivery aumenta no fim do mês, isso pode ser fruto de uma compra de mercado mal planejada.",
+            "seus gastos com assinatura tem aumentado gradualmente a meses, você tem aproveitado todos estes streamings de verdade? Talvez valha a pena dar uma revisitada e cancelar alguns"
+            este são só alguns exemplos, crie análises verdadeiras.
+
+            Use alguns emojis e seja leve, breve, educado/jovial/engraçado.
+            Cuidado para não comparar dados que não conversem entre si e também para não parecer muito mão de vaca, tentando fazer o usuário economizar a qualquer custo.
+    
         `;
 
         const resposta = await model.generateContent({ contents: [{ role: "user", parts: [{ text: prompt }] }] });
 
-
         if (resposta?.response?.candidates) {
             const insights = resposta.response.candidates[0]?.content?.parts?.[0]?.text?.trim();
-            ctx.reply(`💡 *Seus Insights:* \n\n${insights}`, { parse_mode: "Markdown" });
+            ctx.reply(` *Seus Insights:* \n\n${insights}`, { parse_mode: "Markdown" });
         } else {
             ctx.reply("Não foi possível gerar insights com os dados fornecidos.");
         }
