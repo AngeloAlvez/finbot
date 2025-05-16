@@ -17,11 +17,13 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 const categorias = {
     "Transporte": { emoji: "🏍️", subcategorias: [ "Combustível", "Manutenção", "Uber", "Estacionamento", "Ônibus", "Outros" ] },
     "Alimentação": { emoji: "🍽️", subcategorias: [ "Mercado", "Restaurantes", "Delivery", "Lanchonete", "Outros" ] },
-    "Lazer": { emoji: "🎉", subcategorias: [ "Jogos", "Assinaturas", "Shows", "Viagens", "Hobbies","Alcool", "Fumo", "Outros" ] },
+    "Lazer": { emoji: "🎉", subcategorias: [ "Jogos", "Assinaturas", "Shows", "Viagens", "Hobbies","Alcool", "Fumo", "Cultivo", "Outros" ] },
     "Moradia": { emoji: "🏠", subcategorias: [ "Aluguel", "Contas Fixas" ,"Manutenção", "Melhorias" ,"Outros"] },
     "Saúde": { emoji: "❤️", subcategorias: [ "Consultas", "Medicamentos", "Academia", "Outros"] },
     "Educação": { emoji: "📚", subcategorias: [ "Cursos", "Livros", "Mensalidade escolar", "Material escolar", "Outros" ] },
-    "Outros": { emoji: "📦", subcategorias: [ "Presentes", "Doações", "Imprevistos", "Outros" ] }
+    "Pessoal": { emoji: "🧍", subcategorias: [ "Cabelo", "Estética", "Roupas", "Acessórios", "Outros" ]},
+    "Pets": { emoji: "🐾", subcategorias: [ "Ração", "Veterinário", "Brinquedos", "Higiene", "Outros" ]},
+    "Outros": { emoji: "📦", subcategorias: [ "Presentes", "Doações", "Imprevistos", "Parcelamentos", "Outros" ] }
 };
 
 function capitalizeFirstLetter(string) {
