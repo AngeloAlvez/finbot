@@ -196,7 +196,7 @@ async function gerarRelatorio(ctx, dataInicio, dataFim, titulo, tipo) {
 
     } catch (err) {
         console.error("Erro inesperado ao gerar relatório:", err);
-        ctx.reply("Ocorreu um erro inesperado ao gerar o relatório.");
+        ctx.reply("Ocorreu um erro inesperado ao gerar o relatório. ");
     }
 }
 
