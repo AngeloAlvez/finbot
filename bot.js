@@ -226,7 +226,7 @@ Sem problemas! Use */delete* para apagar o último gasto e tente um nome mais de
 ✨ *Quer insights inteligentes sobre seus gastos?*
 Use */insights* e eu analisarei seus dados para te dar dicas personalizadas de como economizar e otimizar suas finanças!
 
-⚡ Simples, eficiente e sem burocracia. Bora começar? 🚀`, { parse_mode: "Markdown" });
+⚡ Simples, eficiente e sem burocracia. Bora começar? 🚀🚀🚀`, { parse_mode: "Markdown" });
 });
 
 bot.command("delete", async (ctx) => {
