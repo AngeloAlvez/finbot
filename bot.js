@@ -17,7 +17,7 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 const categorias = {
     "Transporte": { emoji: "🏍️", subcategorias: [ "Combustível", "Manutenção", "Uber", "Estacionamento", "Ônibus", "Outros" ] },
     "Alimentação": { emoji: "🍽️", subcategorias: [ "Mercado", "Restaurantes", "Delivery", "Lanchonete", "Outros" ] },
-    "Lazer": { emoji: "🎉", subcategorias: [ "Jogos", "Assinaturas", "Shows", "Viagens", "Hobbies","Alcool", "Fumo", "Cultivo", "Outros" ] },
+    "Lazer": { emoji: "🎉", subcategorias: [ "Jogos", "Assinaturas", "Shows", "Viagens", "Hobbies","Alcool", "Fumo", "Jardinagem", "Outros" ] },
     "Moradia": { emoji: "🏠", subcategorias: [ "Aluguel", "Contas Fixas" ,"Manutenção", "Melhorias" ,"Outros"] },
     "Saúde": { emoji: "❤️", subcategorias: [ "Consultas", "Medicamentos", "Academia", "Outros"] },
     "Educação": { emoji: "📚", subcategorias: [ "Cursos", "Livros", "Mensalidade escolar", "Material escolar", "Outros" ] },
