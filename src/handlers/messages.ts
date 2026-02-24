@@ -17,7 +17,7 @@ async function handleTextMessage(ctx: BotContext): Promise<void> {
 
     if (!match) {
       await ctx.reply(
-        '⚠️ Opa! Parece que o formato está incorreto.\n\n📌 Envie algo simples como: *Almoço 45* e eu registrarei seu gasto automaticamente! 😉\n\n Precisa de /ajuda?',
+        '⚠️ Opa! Parece que o formato está incorreto.\n\n📌 Envie algo simples como: *Janta 45* e eu registrarei seu gasto automaticamente! 😉\n\n Precisa de /ajuda?',
         { parse_mode: 'Markdown' }
       );
       return;
