@@ -4,7 +4,7 @@
 ARG NODE_VERSION=20.18.0
 FROM node:${NODE_VERSION}-slim AS base
 
-LABEL fly_launch_runtime="bot.js"
+LABEL fly_launch_runtime="Node.js"
 
 # Node.js app lives here
 WORKDIR /app
@@ -27,6 +27,9 @@ RUN npm ci
 # Copy application code
 COPY . .
 
+# Build TypeScript
+RUN npm run build
+
 
 # Final stage for app image
 FROM base
@@ -36,4 +39,4 @@ COPY --from=build /app /app
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
-CMD [ "node", "bot.js" ]
+CMD [ "node", "dist/index.js" ]
