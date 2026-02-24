@@ -6,6 +6,9 @@ node_modules/
 .env.local
 .env.*.local
 
+# Build output
+dist/
+
 # Logs
 logs
 *.log
@@ -20,3 +23,6 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+
+# Supabase
+supabase/.temp/

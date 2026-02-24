@@ -1,8 +1,11 @@
 {
   "name": "finbot",
   "version": "1.0.0",
-  "main": "bot.js",
+  "main": "dist/index.js",
   "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -18,6 +21,10 @@
     "telegraf": "^4.16.3"
   },
   "devDependencies": {
-    "@flydotio/dockerfile": "^0.7.8"
+    "@flydotio/dockerfile": "^0.7.8",
+    "@types/node": "^25.3.0",
+    "supabase": "^2.76.14",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }

@@ -12,7 +12,7 @@ const { ptBR } = require("date-fns/locale");
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 const categorias = {
     "Transporte": { emoji: "🏍️", subcategorias: [ "Combustível", "Manutenção", "Uber", "Estacionamento", "Ônibus", "Outros" ] },
@@ -371,7 +371,10 @@ bot.on("text", async (ctx) => {
         const dataHora = new Date().toISOString();
 
         const { error } = await supabase.from("gastos").insert([{ descricao, valor, categoria, subcategoria, usuario: ctx.from.id, data_hora: dataHora }]);
-        if (error) return ctx.reply("Erro ao salvar gasto.");
+        if (error) {
+            console.error("Erro Supabase:", error);
+            return ctx.reply("Erro ao salvar gasto.");
+        }
                ctx.reply(`✅ Gasto salvo!\n Descrição: ${descricao}\n Valor: R$${valor.toFixed(2)}\n Categoria: ${categoria} - ${subcategoria}\n Data e Hora: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}`);
     } catch (err) {
         ctx.reply("Ocorreu um erro inesperado. Tente novamente mais tarde.");
